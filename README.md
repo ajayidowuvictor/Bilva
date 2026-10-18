@@ -26,16 +26,24 @@ A higher-resolution original logo (SVG or transparent PNG) should replace these 
 
 ## Settings
 
-Two environment variables connect the app to Supabase (see `.env.example`):
+Set these in the hosting provider's environment settings (see `.env.example`):
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` connect the app to Supabase.
+- `AI_PROVIDER` is `gemini` (free tier, default) or `anthropic` (paid). The matching key must be set: `GEMINI_API_KEY` or `ANTHROPIC_API_KEY`.
+- `GEMINI_MODEL` and `ANTHROPIC_MODEL` are optional model overrides.
+- `AI_DAILY_LIMIT` caps successful AI runs per person per 24 hours (default 10).
+
+Free-tier note: on Gemini's free tier, Google may use content to improve its products. Use it for building and testing only. Before real customers use Bilva, switch to a paid provider (Claude, or paid Gemini).
 
 ## Database
 
-Run the files in `supabase/migrations/` in order in the Supabase SQL editor.
+Run the files in `supabase/migrations/` in order in the Supabase SQL editor:
+
+1. `0001_init.sql`: profiles and projects.
+2. `0002_briefs_usage.sql`: briefs and AI usage tracking.
 
 ## Status
 
-Skeleton: sign up and sign in, project list, new idea form, saved project page.
-Next: guided brief, strategies, drafting, critique, editor, usage limits.
+- Phase 1 (done): sign up and sign in, project list, new idea form, saved project page.
+- Phase 2: guided brief (build, answer questions, update, approve) with a daily AI limit.
+- Next: strategies, drafting, critique, editor, export.

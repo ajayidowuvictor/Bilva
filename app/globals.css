@@ -393,6 +393,53 @@ a.card:hover {
   font-size: 0.85rem;
 }
 
+.chip-info {
+  background: var(--info-soft);
+  color: #0b5c8a;
+}
+
+.chip-neutral {
+  background: var(--line);
+  color: var(--muted);
+}
+
+.list-plain {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.list-plain li + li {
+  margin-top: 6px;
+}
+
+.brief-field {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.brief-field:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.brief-field p {
+  margin-top: 4px;
+}
+
+h3 {
+  font-size: 1.05rem;
+}
+
+.textarea-short {
+  min-height: 70px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .chip-info {
+    color: #6cc4f0;
+  }
+}
+
 .empty {
   text-align: center;
   padding: 36px 18px;
