@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { supabaseConfigured } from "@/lib/config";
@@ -150,6 +151,14 @@ export default function LoginPage() {
                     : "Create account"}
               </button>
             </form>
+
+            {mode === "signup" && (
+              <p className="muted small" style={{ textAlign: "center" }}>
+                By creating an account you agree to the{" "}
+                <Link href="/terms">Terms</Link> and the{" "}
+                <Link href="/privacy">Privacy Policy</Link>.
+              </p>
+            )}
 
             <p className="muted" style={{ textAlign: "center" }}>
               {mode === "signin" ? "New to Bilva? " : "Already have an account? "}

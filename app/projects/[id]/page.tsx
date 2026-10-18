@@ -22,6 +22,7 @@ import { MAX_REVISIONS, readCritique, type Critique } from "@/lib/critique";
 import CritiqueView from "./critique-view";
 import { CritiqueForm, FactsForm, ReviseForm } from "./review-forms";
 import { DownloadButton, EditDraftForm, FinalButton } from "./finish-forms";
+import { DeleteProjectForm } from "./delete-forms";
 
 // The AI can take a while to answer, so allow the page's actions up to a minute.
 export const maxDuration = 60;
@@ -694,6 +695,8 @@ export default async function ProjectPage({
           )}
         </>
       )}
+
+      <DeleteProjectForm projectId={project.id} />
     </div>
   );
 }

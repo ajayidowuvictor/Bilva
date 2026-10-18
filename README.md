@@ -32,6 +32,7 @@ Set these in the hosting provider's environment settings (see `.env.example`):
 - `AI_PROVIDER` is `gemini` (free tier, default) or `anthropic` (paid). The matching key must be set: `GEMINI_API_KEY` or `ANTHROPIC_API_KEY`.
 - `GEMINI_MODEL` and `ANTHROPIC_MODEL` are optional model overrides.
 - `GEMINI_FALLBACK_MODELS` (optional, comma separated) lists the free Gemini models tried in turn when the first one is busy.
+- `NEXT_PUBLIC_CONTACT_EMAIL` (optional) is shown on the Privacy Policy and Terms pages.
 - `AI_DAILY_LIMIT` caps successful AI runs per person per 24 hours (default 10).
 
 Free-tier note: on Gemini's free tier, Google may use content to improve its products. Use it for building and testing only. Before real customers use Bilva, switch to a paid provider (Claude, or paid Gemini).
@@ -46,6 +47,7 @@ Run the files in `supabase/migrations/` in order in the Supabase SQL editor:
 4. `0004_drafts.sql`: every version of the written copy.
 5. `0005_critique_facts.sql`: editor reviews, revision tracking, and facts added after approval.
 6. `0006_final_draft.sql`: the version the owner marks as final.
+7. `0007_delete_account.sql`: lets a person delete their own account and all their data.
 
 ## Status
 
@@ -56,4 +58,5 @@ Run the files in `supabase/migrations/` in order in the Supabase SQL editor:
 - Phase 5: editor review (scores, claims check, fixes), rewrite from the review (maximum 2 rounds), and a box to add missing facts after approval.
 - Phase 6: edit the advert by hand (saved as a new version, no AI run), mark one version as final, download as a text file, and a tidier project page.
 - Phase 7: four copy formats (social media post, WhatsApp message, listing, email). The format is chosen for the first draft and can be switched on any new version. No database change.
-- Next: launch readiness (email confirmation, privacy and terms, data deletion, domain, paid hosting), the switch to a paid AI provider, plans and payments.
+- Launch readiness (code done): Privacy Policy and Terms pages with a footer and sign-up consent line, delete a project, an Account page with data download and account deletion. Still to do outside the code: switch email confirmation back on (with custom SMTP), domain, paid hosting, paid AI provider, lawyer review of the legal pages.
+- Next: the switch to a paid AI provider, plans and payments.

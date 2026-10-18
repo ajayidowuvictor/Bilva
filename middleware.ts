@@ -11,7 +11,10 @@ export async function middleware(request: NextRequest) {
   const { response, user } = await updateSession(request);
   const path = request.nextUrl.pathname;
 
-  if (!user && path.startsWith("/projects")) {
+  const needsLogin =
+    path.startsWith("/projects") || path.startsWith("/account");
+
+  if (!user && needsLogin) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";

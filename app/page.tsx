@@ -4,7 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/config";
 import Brand from "@/components/Brand";
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ account?: string }>;
+}) {
+  const { account } = await searchParams;
   if (supabaseConfigured) {
     const supabase = await createClient();
     const {
@@ -30,6 +35,11 @@ export default async function HomePage() {
 
       <main>
         <div className="container stack-lg">
+          {account === "deleted" && (
+            <div className="alert alert-info">
+              Your account and everything in it has been deleted.
+            </div>
+          )}
           {!supabaseConfigured && (
             <div className="alert alert-info">
               <strong>Bilva is online but not connected to its database yet.</strong>{" "}
