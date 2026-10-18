@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/config";
+import Brand from "@/components/Brand";
 
 export default async function HomePage() {
   if (supabaseConfigured) {
@@ -18,9 +19,7 @@ export default async function HomePage() {
     <>
       <header className="site-header">
         <div className="container">
-          <Link href="/" className="brand">
-            Bil<span>va</span>
-          </Link>
+          <Brand href="/" />
           {supabaseConfigured && (
             <Link href="/login" className="btn btn-ghost btn-small">
               Sign in
@@ -41,7 +40,9 @@ export default async function HomePage() {
           )}
 
           <section className="hero stack">
-            <h1>Strategy before writing.</h1>
+            <h1>
+              Strategy before <span className="hl">writing.</span>
+            </h1>
             <p>
               Bilva turns a rough business idea into persuasive copy. It asks
               the right questions first, tests three different arguments, then

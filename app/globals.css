@@ -1,32 +1,58 @@
+/*
+  Bilva brand colours, measured from the official banner and flyer:
+    navy  #01002A   pink  #EB0B87   blue  #1495D7   deep blue  #1A56AD
+  Text-bearing pink surfaces use a slightly deeper shade (#D40A7B) so white
+  text stays readable (about 5:1). The pure brand pink is used for large
+  text, rings and decoration.
+*/
 :root {
-  --bg: #faf8f4;
+  --navy: #01002a;
+  --pink: #eb0b87;
+  --blue: #1495d7;
+  --blue-deep: #1a56ad;
+  --violet: #8c50a6;
+  --brand-gradient: linear-gradient(90deg, #eb0b87 0%, #8c50a6 50%, #1495d7 100%);
+
+  --bg: #f6f7fb;
   --surface: #ffffff;
-  --ink: #1b1f2a;
-  --muted: #5d6472;
-  --line: #e4dfd5;
-  --accent: #0f6b5c;
-  --accent-hover: #0c5a4d;
+  --ink: #01002a;
+  --muted: #55587a;
+  --line: #e1e3ef;
+
+  --accent: #eb0b87;
+  --accent-strong: #d40a7b;
+  --accent-strong-hover: #b80868;
+  --accent-text: #c2087a;
   --accent-ink: #ffffff;
-  --accent-soft: #e3f1ee;
+  --accent-soft: #fde6f2;
+
+  --info-soft: #e3f2fb;
+  --info-line: #b8dcf2;
+
   --danger: #b3261e;
   --danger-soft: #fbeae8;
+
   --radius: 14px;
-  --shadow: 0 1px 2px rgba(27, 31, 42, 0.04), 0 4px 16px rgba(27, 31, 42, 0.05);
+  --shadow: 0 1px 2px rgba(1, 0, 42, 0.05), 0 6px 20px rgba(1, 0, 42, 0.06);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #14171f;
-    --surface: #1c202b;
-    --ink: #f1efe9;
-    --muted: #a3a9b6;
-    --line: #2b3040;
-    --accent: #3fb59f;
-    --accent-hover: #55c7b1;
-    --accent-ink: #0d1a17;
-    --accent-soft: #17302b;
+    --bg: #01002a;
+    --surface: #0c0a3d;
+    --ink: #f4f5fc;
+    --muted: #a8abcf;
+    --line: #25235f;
+
+    --accent-text: #ff5cb0;
+    --accent-soft: #2b0a45;
+
+    --info-soft: #0a2447;
+    --info-line: #1a4a80;
+
     --danger: #ff8a80;
     --danger-soft: #3a1f1d;
+
     --shadow: none;
   }
 }
@@ -43,7 +69,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -52,11 +79,10 @@ body {
 h1,
 h2,
 h3 {
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: 700;
-  line-height: 1.2;
+  font-weight: 800;
+  line-height: 1.15;
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 h1 {
@@ -64,7 +90,7 @@ h1 {
 }
 
 h2 {
-  font-size: 1.3rem;
+  font-size: 1.25rem;
 }
 
 p {
@@ -72,7 +98,7 @@ p {
 }
 
 a {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .container {
@@ -82,9 +108,11 @@ a {
   padding: 0 16px;
 }
 
+/* Header: always brand navy, with the logo gradient as a thin base line. */
 .site-header {
-  border-bottom: 1px solid var(--line);
-  background: var(--bg);
+  background: var(--navy);
+  border-bottom: 3px solid transparent;
+  border-image: var(--brand-gradient) 1;
 }
 
 .site-header .container {
@@ -92,20 +120,24 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 60px;
+  min-height: 64px;
 }
 
 .brand {
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: 700;
-  font-size: 1.35rem;
-  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
   text-decoration: none;
+  font-weight: 800;
+  font-size: 1.35rem;
   letter-spacing: -0.02em;
 }
 
-.brand span {
-  color: var(--accent);
+.brand-mark {
+  display: block;
+  height: 34px;
+  width: auto;
 }
 
 .header-right {
@@ -116,12 +148,22 @@ a {
 }
 
 .header-email {
-  color: var(--muted);
+  color: #b9bcdd;
   font-size: 0.85rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 140px;
+}
+
+.site-header .btn-ghost {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.site-header .btn-ghost:hover {
+  border-color: var(--pink);
+  background: rgba(235, 11, 135, 0.15);
 }
 
 main {
@@ -141,23 +183,29 @@ main {
   align-items: center;
   justify-content: center;
   min-height: 46px;
-  padding: 0 20px;
-  border-radius: 12px;
+  padding: 0 22px;
+  border-radius: 999px;
   border: 1px solid transparent;
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
+.btn:focus-visible,
+.toggle:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
 .btn-primary {
-  background: var(--accent);
+  background: var(--accent-strong);
   color: var(--accent-ink);
 }
 
 .btn-primary:hover {
-  background: var(--accent-hover);
+  background: var(--accent-strong-hover);
 }
 
 .btn-primary:disabled {
@@ -177,7 +225,7 @@ main {
 
 .btn-small {
   min-height: 36px;
-  padding: 0 14px;
+  padding: 0 16px;
   font-size: 0.9rem;
 }
 
@@ -201,11 +249,11 @@ a.card {
 }
 
 a.card:hover {
-  border-color: var(--accent);
+  border-color: var(--pink);
 }
 
 .card-title {
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 4px;
 }
 
@@ -229,9 +277,9 @@ a.card:hover {
   padding: 2px 10px;
   border-radius: 999px;
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .row {
@@ -248,7 +296,7 @@ a.card:hover {
 
 .label {
   display: block;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 6px;
 }
 
@@ -271,7 +319,7 @@ a.card:hover {
 
 .input:focus,
 .textarea:focus {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--blue);
   outline-offset: 1px;
   border-color: transparent;
 }
@@ -293,7 +341,8 @@ a.card:hover {
 }
 
 .alert-info {
-  background: var(--accent-soft);
+  background: var(--info-soft);
+  border: 1px solid var(--info-line);
   color: var(--ink);
 }
 
@@ -302,7 +351,11 @@ a.card:hover {
 }
 
 .hero h1 {
-  font-size: 2.3rem;
+  font-size: 2.4rem;
+}
+
+.hero h1 .hl {
+  color: var(--accent);
 }
 
 .hero p {
@@ -313,7 +366,7 @@ a.card:hover {
 
 .steps {
   display: grid;
-  gap: 12px;
+  gap: 14px;
   grid-template-columns: 1fr;
   margin: 0;
   padding: 0;
@@ -323,14 +376,21 @@ a.card:hover {
 .steps li {
   display: flex;
   gap: 12px;
-  align-items: baseline;
+  align-items: flex-start;
 }
 
 .steps .num {
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: 700;
-  color: var(--accent);
-  min-width: 1.6rem;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--accent-strong);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.85rem;
 }
 
 .empty {
@@ -366,8 +426,8 @@ a.card:hover {
   border: none;
   padding: 0;
   font: inherit;
-  color: var(--accent);
-  font-weight: 600;
+  color: var(--accent-text);
+  font-weight: 700;
   cursor: pointer;
   text-decoration: underline;
 }
@@ -378,7 +438,7 @@ a.card:hover {
   }
 
   .hero h1 {
-    font-size: 2.8rem;
+    font-size: 3rem;
   }
 
   .header-email {

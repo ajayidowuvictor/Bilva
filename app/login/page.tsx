@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { supabaseConfigured } from "@/lib/config";
+import Brand from "@/components/Brand";
 
 type Mode = "signin" | "signup";
 
@@ -78,9 +78,7 @@ export default function LoginPage() {
     <>
       <header className="site-header">
         <div className="container">
-          <Link href="/" className="brand">
-            Bil<span>va</span>
-          </Link>
+          <Brand href="/" />
         </div>
       </header>
 

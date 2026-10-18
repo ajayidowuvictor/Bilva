@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import Brand from "@/components/Brand";
 
 export default async function ProjectsLayout({
   children,
@@ -20,9 +20,7 @@ export default async function ProjectsLayout({
     <>
       <header className="site-header">
         <div className="container">
-          <Link href="/projects" className="brand">
-            Bil<span>va</span>
-          </Link>
+          <Brand href="/projects" />
           <div className="header-right">
             <span className="header-email">{user.email}</span>
             <form action="/auth/signout" method="post">
