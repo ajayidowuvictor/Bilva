@@ -155,8 +155,26 @@ export async function generateDraftAction(
     status: "success",
   });
 
-  const draft = parseDraft(extractJson(result.text));
+  const parsedJson = extractJson(result.text);
+  const draft = parseDraft(parsedJson);
   if (!draft) {
+    // Shape only, never the owner's content, so the logs stay private.
+    const trimmed = result.text.trim();
+    console.error(
+      "Draft not usable:",
+      JSON.stringify({
+        model: result.model,
+        chars: trimmed.length,
+        outputTokens: result.outputTokens,
+        startsWithBrace: trimmed.startsWith("{"),
+        endsWithBrace: trimmed.endsWith("}"),
+        jsonParsed: parsedJson !== null,
+        keys:
+          typeof parsedJson === "object" && parsedJson !== null
+            ? Object.keys(parsedJson as Record<string, unknown>).slice(0, 8)
+            : [],
+      }),
+    );
     return { error: friendlyAiMessage(new AiError("bad_response", "")) };
   }
 

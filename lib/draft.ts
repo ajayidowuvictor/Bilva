@@ -78,10 +78,12 @@ export function buildDraftRequest(args: {
     parts.push("Write the advert. Return it as JSON.");
   }
 
+  // Generous room: some models spend part of this limit on thinking, and a
+  // cut-off answer cannot be read.
   return {
     system: DRAFT_SYSTEM,
     user: parts.join("\n\n"),
-    maxOutputTokens: 2048,
+    maxOutputTokens: 6144,
   };
 }
 
@@ -91,33 +93,61 @@ function text(value: unknown, max: number): string {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
 
+// The AI sometimes returns paragraphs as a list, or a single note as a string.
+function bodyText(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => text(item, 1500))
+      .filter((item) => item.length > 0)
+      .join("\n\n")
+      .slice(0, 2500);
+  }
+  return text(value, 2500);
+}
+
+function noteList(value: unknown): string[] {
+  const list = Array.isArray(value) ? value : typeof value === "string" ? [value] : [];
+  return list
+    .map((item) => text(item, 300))
+    .filter((item) => item.length > 0)
+    .slice(0, 4);
+}
+
 export function readDraft(raw: unknown): Draft | null {
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
     return null;
   }
   const r = raw as Record<string, unknown>;
   const headline = text(r.headline, 160);
-  const body = text(r.body, 2500);
+  const body = bodyText(r.body);
   // An advert with no headline or no body is not usable.
   if (!headline || !body) return null;
-
-  const notes = Array.isArray(r.owner_notes)
-    ? r.owner_notes
-        .map((item) => text(item, 300))
-        .filter((item) => item.length > 0)
-        .slice(0, 4)
-    : [];
 
   return {
     headline,
     body,
     call_to_action: text(r.call_to_action, 300),
-    owner_notes: notes,
+    owner_notes: noteList(r.owner_notes),
   };
 }
 
+// Also accepts the advert wrapped in a list or in a single outer key, which
+// some models do even when asked not to.
 export function parseDraft(raw: unknown): Draft | null {
-  return readDraft(raw);
+  let value: unknown = raw;
+  if (Array.isArray(value) && value.length > 0) {
+    value = value[0];
+  }
+  const direct = readDraft(value);
+  if (direct) return direct;
+
+  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+    const inner = Object.values(value as Record<string, unknown>);
+    if (inner.length === 1) {
+      return readDraft(Array.isArray(inner[0]) ? inner[0][0] : inner[0]);
+    }
+  }
+  return null;
 }
 
 // --- Checks Bilva runs on its own writing --------------------------------
