@@ -45,6 +45,7 @@ Run the files in `supabase/migrations/` in order in the Supabase SQL editor:
 3. `0003_strategies.sql`: the three angles Bilva proposes and the one the owner chooses.
 4. `0004_drafts.sql`: every version of the written copy.
 5. `0005_critique_facts.sql`: editor reviews, revision tracking, and facts added after approval.
+6. `0006_final_draft.sql`: the version the owner marks as final.
 
 ## Status
 
@@ -53,4 +54,5 @@ Run the files in `supabase/migrations/` in order in the Supabase SQL editor:
 - Phase 3: three strategic angles from the approved brief; the owner chooses one (or asks for three new ones).
 - Phase 4: first draft (short social media advert) from the brief and chosen angle, with [NEED: ...] markers, a check for numbers the owner never gave, copy button and version history.
 - Phase 5: editor review (scores, claims check, fixes), rewrite from the review (maximum 2 rounds), and a box to add missing facts after approval.
-- Next: editor, export.
+- Phase 6: edit the advert by hand (saved as a new version, no AI run), mark one version as final, download as a text file, and a tidier project page.
+- Next: more copy formats, usage and plan limits, payments, and the switch to a paid AI provider.

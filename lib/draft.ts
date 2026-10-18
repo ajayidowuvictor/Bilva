@@ -213,3 +213,34 @@ export function draftAsText(draft: Draft): string {
     .filter((part) => part.length > 0)
     .join("\n\n");
 }
+
+// A safe file name for the downloaded advert, such as "tanke-land-advert.txt".
+export function exportFileName(title: string): string {
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40)
+    .replace(/-+$/g, "");
+  return `${slug || "bilva"}-advert.txt`;
+}
+
+// What the owner may change by hand. Returns an error message, or the
+// cleaned advert.
+export function checkEditedDraft(input: {
+  headline: string;
+  body: string;
+  call_to_action: string;
+}): { error: string } | { draft: Draft } {
+  const headline = input.headline.trim().slice(0, 160);
+  const body = input.body
+    .replace(/\r\n/g, "\n")
+    .trim()
+    .slice(0, 2500);
+  const cta = input.call_to_action.trim().slice(0, 300);
+  if (!headline) return { error: "Please give the advert a headline." };
+  if (!body) return { error: "Please write the body of the advert." };
+  return {
+    draft: { headline, body, call_to_action: cta, owner_notes: [] },
+  };
+}

@@ -14,12 +14,13 @@ import {
 } from "./brief-forms";
 import StrategyView, { type StrategyCardData } from "./strategy-view";
 import { GenerateStrategiesForm } from "./strategy-forms";
-import { readDraft, type Draft } from "@/lib/draft";
+import { draftAsText, exportFileName, readDraft, type Draft } from "@/lib/draft";
 import DraftView from "./draft-view";
 import { GenerateDraftForm } from "./draft-forms";
 import { MAX_REVISIONS, readCritique, type Critique } from "@/lib/critique";
 import CritiqueView from "./critique-view";
 import { CritiqueForm, FactsForm, ReviseForm } from "./review-forms";
+import { DownloadButton, EditDraftForm, FinalButton } from "./finish-forms";
 
 // The AI can take a while to answer, so allow the page's actions up to a minute.
 export const maxDuration = 60;
@@ -33,6 +34,8 @@ type ProjectRecord = {
   created_at: string;
   // Only present once the Phase 5 database update has been run.
   extra_facts?: string | null;
+  // Only present once the Phase 6 database update has been run.
+  final_draft_id?: string | null;
 };
 
 type BriefRecord = {
@@ -155,6 +158,12 @@ export default async function ProjectPage({
       latestDraft.row.strategy_id !== chosenItem.id,
   );
   const extraFacts = project.extra_facts ?? "";
+  const finalDraftId = project.final_draft_id ?? null;
+  const finalEntry =
+    finalDraftId !== null
+      ? (drafts.find((item) => item.row.id === finalDraftId) ?? null)
+      : null;
+  const fileName = exportFileName(project.title);
   const revisionsUsed = draftRows.filter((row) => row.kind === "revision").length;
   const roundsLeft = Math.max(MAX_REVISIONS - revisionsUsed, 0);
 
@@ -225,6 +234,31 @@ export default async function ProjectPage({
           </p>
         )}
       </section>
+
+      {finalEntry && (
+        <section className="card stack">
+          <div className="row">
+            <h2>Your final advert</h2>
+            <span className="chip chip-info">
+              Version {finalEntry.row.version}
+            </span>
+          </div>
+          <DraftView
+            draft={finalEntry.draft}
+            ownerText={ownerText}
+            showCopy
+          />
+          <DownloadButton
+            text={draftAsText(finalEntry.draft)}
+            fileName={fileName}
+          />
+          <FinalButton
+            projectId={project.id}
+            draftId={finalEntry.row.id}
+            isFinal
+          />
+        </section>
+      )}
 
       {databaseNeedsUpdate && (
         <div className="alert alert-info">
@@ -374,22 +408,42 @@ export default async function ProjectPage({
 
           {!strategyError && strategyItems.length > 0 && (
             <>
-              <section className="card stack">
-                <h2>
-                  {anyChosen ? "Your angles" : "Step 2: Choose your angle"}
-                </h2>
-                <p className="muted">
-                  {anyChosen
-                    ? "You can still switch to a different angle below."
-                    : "Read all three, then choose the one you want the copy built on."}
-                </p>
-              </section>
+              {anyChosen && chosenItem ? (
+                <section className="card">
+                  <details className="fold">
+                    <summary>
+                      Your angle: &ldquo;{chosenItem.strategy.name}&rdquo;
+                    </summary>
+                    <div className="stack-lg">
+                      <p className="muted">
+                        These are the three angles Bilva proposed. You can
+                        still switch to a different one.
+                      </p>
+                      <StrategyView
+                        projectId={project.id}
+                        items={strategyItems}
+                        anyChosen={anyChosen}
+                      />
+                    </div>
+                  </details>
+                </section>
+              ) : (
+                <>
+                  <section className="card stack">
+                    <h2>Step 2: Choose your angle</h2>
+                    <p className="muted">
+                      Read all three, then choose the one you want the copy
+                      built on.
+                    </p>
+                  </section>
 
-              <StrategyView
-                projectId={project.id}
-                items={strategyItems}
-                anyChosen={anyChosen}
-              />
+                  <StrategyView
+                    projectId={project.id}
+                    items={strategyItems}
+                    anyChosen={anyChosen}
+                  />
+                </>
+              )}
 
               {!anyChosen && (
                 <section className="card stack">
@@ -466,6 +520,12 @@ export default async function ProjectPage({
                           Improved after review
                         </span>
                       )}
+                      {latestDraft.row.kind === "owner" && (
+                        <span className="chip chip-info">Edited by you</span>
+                      )}
+                      {finalDraftId === latestDraft.row.id && (
+                        <span className="chip chip-info">Final</span>
+                      )}
                     </div>
                     {draftIsForOtherAngle && (
                       <div className="alert alert-info">
@@ -484,6 +544,17 @@ export default async function ProjectPage({
                       ownerText={ownerText}
                       showCopy
                     />
+                    <DownloadButton
+                      text={draftAsText(latestDraft.draft)}
+                      fileName={fileName}
+                    />
+                    {finalDraftId !== latestDraft.row.id && (
+                      <FinalButton
+                        projectId={project.id}
+                        draftId={latestDraft.row.id}
+                        isFinal={false}
+                      />
+                    )}
                   </section>
 
                   {critiqueError && (
@@ -552,6 +623,17 @@ export default async function ProjectPage({
                     )}
                   </section>
 
+                  <section className="card">
+                    <details className="fold">
+                      <summary>Edit it yourself</summary>
+                      <EditDraftForm
+                        key={latestDraft.row.version}
+                        projectId={project.id}
+                        draft={latestDraft.draft}
+                      />
+                    </details>
+                  </section>
+
                   {olderDrafts.length > 0 && (
                     <section className="card">
                       <details className="fold">
@@ -564,14 +646,26 @@ export default async function ProjectPage({
                         <div className="stack-lg">
                           {olderDrafts.map(({ row, draft }) => (
                             <div key={row.id} className="stack">
-                              <span className="chip chip-neutral">
-                                Version {row.version}
-                              </span>
+                              <div className="row">
+                                <span className="chip chip-neutral">
+                                  Version {row.version}
+                                </span>
+                                {finalDraftId === row.id && (
+                                  <span className="chip chip-info">Final</span>
+                                )}
+                              </div>
                               <DraftView
                                 draft={draft}
                                 ownerText={ownerText}
                                 showCopy={false}
                               />
+                              {finalDraftId !== row.id && (
+                                <FinalButton
+                                  projectId={project.id}
+                                  draftId={row.id}
+                                  isFinal={false}
+                                />
+                              )}
                             </div>
                           ))}
                         </div>
@@ -580,15 +674,6 @@ export default async function ProjectPage({
                   )}
 
                   {factsCard}
-
-                  <section className="card stack">
-                    <h2>What happens next</h2>
-                    <p className="muted">
-                      Next, you will be able to edit the advert yourself, see
-                      every version side by side, and export it. That step is
-                      being built next.
-                    </p>
-                  </section>
                 </>
               )}
             </>
