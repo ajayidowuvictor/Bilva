@@ -43,14 +43,17 @@ export async function generateDraftAction(
   }
 
   // Row-level security means these only return the signed-in user's rows.
+  // select("*") so a missing newer column never hides the project.
   const { data: project } = await db
     .from("projects")
-    .select("id")
+    .select("*")
     .eq("id", projectId)
     .maybeSingle();
   if (!project) {
     return { error: "We could not find that project." };
   }
+  const facts =
+    typeof project.extra_facts === "string" ? project.extra_facts : "";
 
   const { data: briefRow } = await db
     .from("briefs")
@@ -126,7 +129,7 @@ export async function generateDraftAction(
   let result: AiResult;
   try {
     result = await generateJson(
-      buildDraftRequest({ brief, strategy, previous, note }),
+      buildDraftRequest({ brief, strategy, previous, note, facts }),
     );
   } catch (error) {
     console.error(

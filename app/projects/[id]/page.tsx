@@ -17,6 +17,9 @@ import { GenerateStrategiesForm } from "./strategy-forms";
 import { readDraft, type Draft } from "@/lib/draft";
 import DraftView from "./draft-view";
 import { GenerateDraftForm } from "./draft-forms";
+import { MAX_REVISIONS, readCritique, type Critique } from "@/lib/critique";
+import CritiqueView from "./critique-view";
+import { CritiqueForm, FactsForm, ReviseForm } from "./review-forms";
 
 // The AI can take a while to answer, so allow the page's actions up to a minute.
 export const maxDuration = 60;
@@ -28,6 +31,8 @@ type ProjectRecord = {
   objective: string | null;
   status: string;
   created_at: string;
+  // Only present once the Phase 5 database update has been run.
+  extra_facts?: string | null;
 };
 
 type BriefRecord = {
@@ -42,6 +47,14 @@ type DraftRecord = {
   strategy_id: string | null;
   draft_data: unknown;
   owner_note: string | null;
+  // Only present once the Phase 5 database update has been run.
+  kind?: string | null;
+};
+
+type CritiqueRecord = {
+  id: string;
+  draft_id: string;
+  critique_data: unknown;
 };
 
 type StrategyRecord = {
@@ -60,9 +73,10 @@ export default async function ProjectPage({
   const { id } = await params;
 
   const supabase = await createClient();
+  // select("*") so the page keeps working before newer columns exist.
   const { data } = await supabase
     .from("projects")
-    .select("id, title, original_idea, objective, status, created_at")
+    .select("*")
     .eq("id", id)
     .maybeSingle();
 
@@ -125,7 +139,7 @@ export default async function ProjectPage({
   // Every written version of the copy, newest first.
   const { data: draftData, error: draftError } = await supabase
     .from("drafts")
-    .select("id, version, strategy_id, draft_data, owner_note")
+    .select("*")
     .eq("project_id", id)
     .order("version", { ascending: false });
 
@@ -140,10 +154,29 @@ export default async function ProjectPage({
       chosenItem &&
       latestDraft.row.strategy_id !== chosenItem.id,
   );
+  const extraFacts = project.extra_facts ?? "";
+  const revisionsUsed = draftRows.filter((row) => row.kind === "revision").length;
+  const roundsLeft = Math.max(MAX_REVISIONS - revisionsUsed, 0);
+
+  // The editor's review of each draft version (none before Phase 5's update).
+  const { data: critiqueData, error: critiqueError } = await supabase
+    .from("critiques")
+    .select("id, draft_id, critique_data")
+    .eq("project_id", id);
+  const critiqueByDraft = new Map<string, Critique>();
+  for (const row of (critiqueData as CritiqueRecord[] | null) ?? []) {
+    const parsed = readCritique(row.critique_data);
+    if (parsed) critiqueByDraft.set(row.draft_id, parsed);
+  }
+  const latestCritique = latestDraft
+    ? (critiqueByDraft.get(latestDraft.row.id) ?? null)
+    : null;
+
   // Everything the owner said, used to flag numbers Bilva should not have added.
   const ownerText = [
     project.original_idea,
     project.objective ?? "",
+    extraFacts,
     brief ? JSON.stringify(brief) : "",
   ].join(" ");
 
@@ -154,6 +187,20 @@ export default async function ProjectPage({
 
   const hasCriticalGaps = Boolean(
     brief && brief.missing_facts.some((item) => item.critical),
+  );
+
+  // Lets the owner fill gaps after approving the brief, without a new brief.
+  const factsCard = (
+    <section className="card stack">
+      <h2>Add facts Bilva is missing</h2>
+      <p className="muted">
+        Optional. Anything you know about the gaps in your brief, such as the
+        land title, roads, power, water, payment terms or a real customer
+        comment. Bilva treats these as facts you stated and uses them in the
+        next version, instead of leaving [NEED: ...] markers.
+      </p>
+      <FactsForm projectId={project.id} current={extraFacts} />
+    </section>
   );
 
   return (
@@ -370,6 +417,8 @@ export default async function ProjectPage({
                 </div>
               )}
 
+              {chosenItem && !draftError && !latestDraft && factsCard}
+
               {chosenItem && !draftError && !latestDraft && (
                 <section className="card stack">
                   <h2>Step 3: Write the first draft</h2>
@@ -412,6 +461,11 @@ export default async function ProjectPage({
                       <span className="chip chip-neutral">
                         Version {latestDraft.row.version}
                       </span>
+                      {latestDraft.row.kind === "revision" && (
+                        <span className="chip chip-info">
+                          Improved after review
+                        </span>
+                      )}
                     </div>
                     {draftIsForOtherAngle && (
                       <div className="alert alert-info">
@@ -431,6 +485,55 @@ export default async function ProjectPage({
                       showCopy
                     />
                   </section>
+
+                  {critiqueError && (
+                    <div className="alert alert-info">
+                      Bilva&apos;s database needs its Phase 5 update before
+                      drafts can be reviewed. Please tell the person who set up
+                      Bilva.
+                    </div>
+                  )}
+
+                  {!critiqueError && !latestCritique && (
+                    <section className="card stack">
+                      <h2>Step 4: Have an editor review it</h2>
+                      <p className="muted">
+                        Bilva will read this draft like a tough editor. It
+                        checks every claim against your facts, scores the
+                        advert, and tells you what to fix. It does not change
+                        your draft.
+                      </p>
+                      <CritiqueForm
+                        projectId={project.id}
+                        disabled={aiBlocked}
+                      />
+                      {aiReady && (
+                        <p className="muted small">
+                          {remaining} of {limit} AI runs left today.
+                        </p>
+                      )}
+                    </section>
+                  )}
+
+                  {!critiqueError && latestCritique && (
+                    <section className="card stack">
+                      <h2>Editor&apos;s review</h2>
+                      <CritiqueView critique={latestCritique} />
+                      {roundsLeft > 0 ? (
+                        <ReviseForm
+                          projectId={project.id}
+                          disabled={aiBlocked}
+                          roundsLeft={roundsLeft}
+                        />
+                      ) : (
+                        <p className="muted">
+                          Bilva has used both of its improvement rounds on this
+                          advert. You can still write a new version with your
+                          own note below.
+                        </p>
+                      )}
+                    </section>
+                  )}
 
                   <section className="card stack">
                     <h2>Want it different?</h2>
@@ -476,12 +579,14 @@ export default async function ProjectPage({
                     </section>
                   )}
 
+                  {factsCard}
+
                   <section className="card stack">
                     <h2>What happens next</h2>
                     <p className="muted">
-                      Next, Bilva will critique this draft the way a tough
-                      editor would and improve it. That step is being built
-                      next.
+                      Next, you will be able to edit the advert yourself, see
+                      every version side by side, and export it. That step is
+                      being built next.
                     </p>
                   </section>
                 </>

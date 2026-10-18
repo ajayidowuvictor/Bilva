@@ -463,6 +463,43 @@ h3 {
   margin-top: 4px;
 }
 
+.scores {
+  display: grid;
+  gap: 10px;
+}
+
+.score-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.score-bar {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.score-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--brand-gradient);
+  border-radius: 999px;
+}
+
+@media (max-width: 520px) {
+  .score-row {
+    grid-template-columns: 1fr auto;
+  }
+  .score-row .score-bar {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+}
+
 .draft-paper {
   padding: 20px;
   border: 1px solid var(--line);
