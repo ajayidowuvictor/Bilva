@@ -558,7 +558,7 @@ details.fold > summary {
   cursor: pointer;
   font-weight: 700;
   font-size: 1.15rem;
-  list-style-position: outside;
+  list-style-position: inside;
 }
 
 details.fold[open] > summary {
@@ -663,6 +663,10 @@ a.header-email {
   text-decoration: none;
 }
 
+.site-header .btn {
+  white-space: nowrap;
+}
+
 a.header-email:hover {
   color: #ffffff;
   text-decoration: underline;
@@ -712,4 +716,206 @@ a.header-email:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+/* Screen-reader-only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Project progress */
+.progress-wrap {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 14px 12px;
+  box-shadow: var(--shadow);
+}
+
+.progress {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progress-step {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.progress-step + .progress-step::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  right: 50%;
+  width: 100%;
+  height: 3px;
+  background: var(--line);
+  z-index: 0;
+}
+
+.progress-step.progress-done + .progress-step::before,
+.progress-step.progress-done + .progress-step.progress-current::before {
+  background: var(--accent-strong);
+}
+
+.progress-dot {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.progress-done .progress-dot {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: #ffffff;
+}
+
+.progress-current .progress-dot {
+  border-color: var(--accent-strong);
+  color: var(--accent-text);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.progress-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.progress-done .progress-label,
+.progress-current .progress-label {
+  color: var(--ink);
+}
+
+.progress-hint {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+
+/* Loading placeholders */
+.skeleton {
+  border-radius: var(--radius);
+  background: linear-gradient(
+    90deg,
+    var(--line) 0%,
+    var(--surface) 50%,
+    var(--line) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-title {
+  height: 34px;
+  width: 55%;
+}
+
+.skeleton-bar {
+  height: 84px;
+}
+
+.skeleton-card {
+  height: 120px;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Home page extras */
+.format-list {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.format-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+}
+
+.cta-band {
+  background: linear-gradient(135deg, #01002a 0%, #1d0a4d 100%);
+  border: 1px solid #2d2a73;
+  color: #ffffff;
+  border-radius: var(--radius);
+  padding: 24px 20px;
+}
+
+.cta-band p {
+  color: #c9cbe6;
+}
+
+/* Install banner */
+.install-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--info-soft);
+  border: 1px solid var(--info-line);
+  font-size: 0.95rem;
+}
+
+/* Comfortable tap targets on touch screens */
+@media (pointer: coarse) {
+  .btn-small {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 420px) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+  .progress-label {
+    font-size: 0.68rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
 }

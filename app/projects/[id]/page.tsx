@@ -23,6 +23,7 @@ import CritiqueView from "./critique-view";
 import { CritiqueForm, FactsForm, ReviseForm } from "./review-forms";
 import { DownloadButton, EditDraftForm, FinalButton } from "./finish-forms";
 import { DeleteProjectForm } from "./delete-forms";
+import ProgressSteps, { type ProgressStep } from "@/components/ProgressSteps";
 
 // The AI can take a while to answer, so allow the page's actions up to a minute.
 export const maxDuration = 60;
@@ -199,6 +200,37 @@ export default async function ProjectPage({
     brief && brief.missing_facts.some((item) => item.critical),
   );
 
+  const progressSteps: ProgressStep[] = [
+    { label: "Idea", done: true, hint: "" },
+    {
+      label: "Brief",
+      done: approved,
+      hint: brief
+        ? "answer what you can, then approve your brief."
+        : "build your brief.",
+    },
+    {
+      label: "Angle",
+      done: anyChosen,
+      hint: "choose one of the three angles.",
+    },
+    {
+      label: "Draft",
+      done: Boolean(latestDraft),
+      hint: "write your first draft.",
+    },
+    {
+      label: "Review",
+      done: critiqueByDraft.size > 0,
+      hint: "have the editor review your draft.",
+    },
+    {
+      label: "Final",
+      done: Boolean(finalEntry),
+      hint: "improve it if you like, then mark your final version.",
+    },
+  ];
+
   // Lets the owner fill gaps after approving the brief, without a new brief.
   const factsCard = (
     <section className="card stack">
@@ -226,15 +258,33 @@ export default async function ProjectPage({
         <p className="muted small">Saved {created}</p>
       </div>
 
-      <section className="card stack">
-        <h2>Your idea</h2>
-        <p className="idea-text">{project.original_idea}</p>
-        {project.objective && (
-          <p>
-            <strong>Goal:</strong> {project.objective}
-          </p>
-        )}
-      </section>
+      <ProgressSteps steps={progressSteps} />
+
+      {latest ? (
+        <section className="card">
+          <details className="fold">
+            <summary>Your idea</summary>
+            <div className="stack">
+              <p className="idea-text">{project.original_idea}</p>
+              {project.objective && (
+                <p>
+                  <strong>Goal:</strong> {project.objective}
+                </p>
+              )}
+            </div>
+          </details>
+        </section>
+      ) : (
+        <section className="card stack">
+          <h2>Your idea</h2>
+          <p className="idea-text">{project.original_idea}</p>
+          {project.objective && (
+            <p>
+              <strong>Goal:</strong> {project.objective}
+            </p>
+          )}
+        </section>
+      )}
 
       {finalEntry && (
         <section className="card stack">

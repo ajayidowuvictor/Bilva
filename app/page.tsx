@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/config";
 import Brand from "@/components/Brand";
+import { COPY_FORMATS, FORMATS } from "@/lib/formats";
 
 export default async function HomePage({
   searchParams,
@@ -100,6 +101,29 @@ export default async function HomePage({
               </li>
             </ol>
           </section>
+          <section className="card stack">
+            <h2>What Bilva can write</h2>
+            <ul className="format-list">
+              {COPY_FORMATS.map((key) => (
+                <li key={key}>
+                  <strong>{FORMATS[key].label}</strong>
+                  <span className="muted">{FORMATS[key].blurb}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {supabaseConfigured && (
+            <section className="cta-band stack">
+              <h2>Try it on your own idea</h2>
+              <p>Free while Bilva is in early access. It takes a minute to start.</p>
+              <div>
+                <Link href="/login" className="btn btn-primary">
+                  Get started
+                </Link>
+              </div>
+            </section>
+          )}
         </div>
       </main>
     </>

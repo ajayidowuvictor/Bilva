@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import DeleteAccountForm from "./delete-account-form";
+import InstallApp from "@/components/InstallApp";
 
 export const metadata: Metadata = { title: "Your account | Bilva" };
 
@@ -24,6 +25,8 @@ export default async function AccountPage() {
         <h2>Signed in as</h2>
         <p>{user?.email}</p>
       </section>
+
+      <InstallApp />
 
       <section className="card stack">
         <h2>Download your data</h2>

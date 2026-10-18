@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { statusLabel } from "@/lib/config";
+import InstallApp from "@/components/InstallApp";
 
 type ProjectRow = {
   id: string;
@@ -35,6 +36,8 @@ export default async function ProjectsPage() {
           New project
         </Link>
       </div>
+
+      <InstallApp compact />
 
       {error && (
         <div className="alert alert-error">
