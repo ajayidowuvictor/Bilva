@@ -42,9 +42,11 @@ Run the files in `supabase/migrations/` in order in the Supabase SQL editor:
 
 1. `0001_init.sql`: profiles and projects.
 2. `0002_briefs_usage.sql`: briefs and AI usage tracking.
+3. `0003_strategies.sql`: the three angles Bilva proposes and the one the owner chooses.
 
 ## Status
 
 - Phase 1 (done): sign up and sign in, project list, new idea form, saved project page.
 - Phase 2: guided brief (build, answer questions, update, approve) with a daily AI limit.
-- Next: strategies, drafting, critique, editor, export.
+- Phase 3: three strategic angles from the approved brief; the owner chooses one (or asks for three new ones).
+- Next: drafting, critique, editor, export.
