@@ -55,4 +55,5 @@ Run the files in `supabase/migrations/` in order in the Supabase SQL editor:
 - Phase 4: first draft (short social media advert) from the brief and chosen angle, with [NEED: ...] markers, a check for numbers the owner never gave, copy button and version history.
 - Phase 5: editor review (scores, claims check, fixes), rewrite from the review (maximum 2 rounds), and a box to add missing facts after approval.
 - Phase 6: edit the advert by hand (saved as a new version, no AI run), mark one version as final, download as a text file, and a tidier project page.
-- Next: more copy formats, usage and plan limits, payments, and the switch to a paid AI provider.
+- Phase 7: four copy formats (social media post, WhatsApp message, listing, email). The format is chosen for the first draft and can be switched on any new version. No database change.
+- Next: launch readiness (email confirmation, privacy and terms, data deletion, domain, paid hosting), the switch to a paid AI provider, plans and payments.

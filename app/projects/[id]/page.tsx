@@ -15,6 +15,7 @@ import {
 import StrategyView, { type StrategyCardData } from "./strategy-view";
 import { GenerateStrategiesForm } from "./strategy-forms";
 import { draftAsText, exportFileName, readDraft, type Draft } from "@/lib/draft";
+import { FORMATS } from "@/lib/formats";
 import DraftView from "./draft-view";
 import { GenerateDraftForm } from "./draft-forms";
 import { MAX_REVISIONS, readCritique, type Critique } from "@/lib/critique";
@@ -163,7 +164,6 @@ export default async function ProjectPage({
     finalDraftId !== null
       ? (drafts.find((item) => item.row.id === finalDraftId) ?? null)
       : null;
-  const fileName = exportFileName(project.title);
   const revisionsUsed = draftRows.filter((row) => row.kind === "revision").length;
   const roundsLeft = Math.max(MAX_REVISIONS - revisionsUsed, 0);
 
@@ -238,7 +238,7 @@ export default async function ProjectPage({
       {finalEntry && (
         <section className="card stack">
           <div className="row">
-            <h2>Your final advert</h2>
+            <h2>Your final copy</h2>
             <span className="chip chip-info">
               Version {finalEntry.row.version}
             </span>
@@ -250,7 +250,7 @@ export default async function ProjectPage({
           />
           <DownloadButton
             text={draftAsText(finalEntry.draft)}
-            fileName={fileName}
+            fileName={exportFileName(project.title, finalEntry.draft.format)}
           />
           <FinalButton
             projectId={project.id}
@@ -478,9 +478,9 @@ export default async function ProjectPage({
                   <h2>Step 3: Write the first draft</h2>
                   <p className="muted">
                     You chose &ldquo;{chosenItem.strategy.name}&rdquo;. Bilva
-                    will write a short social media advert from your brief and
-                    this angle. Where it lacks a fact, it will leave a
-                    [NEED: ...] marker instead of guessing.
+                    will write the kind of copy you choose below, from your
+                    brief and this angle. Where it lacks a fact, it will leave
+                    a [NEED: ...] marker instead of guessing.
                   </p>
                   {!aiReady && (
                     <div className="alert alert-info">
@@ -515,6 +515,9 @@ export default async function ProjectPage({
                       <span className="chip chip-neutral">
                         Version {latestDraft.row.version}
                       </span>
+                      <span className="chip chip-neutral">
+                        {FORMATS[latestDraft.draft.format].label}
+                      </span>
                       {latestDraft.row.kind === "revision" && (
                         <span className="chip chip-info">
                           Improved after review
@@ -539,21 +542,31 @@ export default async function ProjectPage({
                         Your note for this version: {latestDraft.row.owner_note}
                       </p>
                     )}
-                    <DraftView
-                      draft={latestDraft.draft}
-                      ownerText={ownerText}
-                      showCopy
-                    />
-                    <DownloadButton
-                      text={draftAsText(latestDraft.draft)}
-                      fileName={fileName}
-                    />
-                    {finalDraftId !== latestDraft.row.id && (
-                      <FinalButton
-                        projectId={project.id}
-                        draftId={latestDraft.row.id}
-                        isFinal={false}
-                      />
+                    {finalDraftId === latestDraft.row.id ? (
+                      <p className="muted">
+                        This version is your final copy. It is shown at the top
+                        of the page.
+                      </p>
+                    ) : (
+                      <>
+                        <DraftView
+                          draft={latestDraft.draft}
+                          ownerText={ownerText}
+                          showCopy
+                        />
+                        <DownloadButton
+                          text={draftAsText(latestDraft.draft)}
+                          fileName={exportFileName(
+                            project.title,
+                            latestDraft.draft.format,
+                          )}
+                        />
+                        <FinalButton
+                          projectId={project.id}
+                          draftId={latestDraft.row.id}
+                          isFinal={false}
+                        />
+                      </>
                     )}
                   </section>
 
@@ -571,7 +584,7 @@ export default async function ProjectPage({
                       <p className="muted">
                         Bilva will read this draft like a tough editor. It
                         checks every claim against your facts, scores the
-                        advert, and tells you what to fix. It does not change
+                        copy, and tells you what to fix. It does not change
                         your draft.
                       </p>
                       <CritiqueForm
@@ -599,7 +612,7 @@ export default async function ProjectPage({
                       ) : (
                         <p className="muted">
                           Bilva has used both of its improvement rounds on this
-                          advert. You can still write a new version with your
+                          copy. You can still write a new version with your
                           own note below.
                         </p>
                       )}
@@ -615,6 +628,7 @@ export default async function ProjectPage({
                       projectId={project.id}
                       disabled={aiBlocked}
                       hasDraft
+                      currentFormat={latestDraft.draft.format}
                     />
                     {aiReady && (
                       <p className="muted small">

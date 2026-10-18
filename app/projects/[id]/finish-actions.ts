@@ -19,13 +19,6 @@ export async function saveEditedDraftAction(
     return { error: "We could not find that project." };
   }
 
-  const checked = checkEditedDraft({
-    headline: String(formData.get("headline") ?? ""),
-    body: String(formData.get("body") ?? ""),
-    call_to_action: String(formData.get("call_to_action") ?? ""),
-  });
-  if ("error" in checked) return { error: checked.error };
-
   const db = await createClient();
   const {
     data: { user },
@@ -46,6 +39,14 @@ export async function saveEditedDraftAction(
   }
 
   const before = readDraft(latest.draft_data);
+  const checked = checkEditedDraft({
+    headline: String(formData.get("headline") ?? ""),
+    body: String(formData.get("body") ?? ""),
+    call_to_action: String(formData.get("call_to_action") ?? ""),
+    format: before?.format,
+  });
+  if ("error" in checked) return { error: checked.error };
+
   if (
     before &&
     before.headline === checked.draft.headline &&

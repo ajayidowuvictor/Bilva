@@ -7,6 +7,7 @@ import { AiError, type AiResult } from "@/lib/ai/types";
 import { dailyLimit, windowStartIso } from "@/lib/usage";
 import { extractJson, parseBrief } from "@/lib/brief";
 import { readStrategy } from "@/lib/strategy";
+import { DEFAULT_FORMAT, isCopyFormat } from "@/lib/formats";
 import {
   DRAFT_PROMPT_VERSION,
   buildDraftRequest,
@@ -103,6 +104,12 @@ export async function generateDraftAction(
   const previous = latestDraft ? readDraft(latestDraft.draft_data) : null;
   const previousVersion = latestDraft ? (latestDraft.version as number) : 0;
 
+  // The owner's choice wins; otherwise keep the kind of copy already written.
+  const requested = formData.get("format");
+  const format = isCopyFormat(requested)
+    ? requested
+    : (previous?.format ?? DEFAULT_FORMAT);
+
   if (!configuredProvider()) {
     return { error: friendlyAiMessage(new AiError("not_configured", "")) };
   }
@@ -129,7 +136,7 @@ export async function generateDraftAction(
   let result: AiResult;
   try {
     result = await generateJson(
-      buildDraftRequest({ brief, strategy, previous, note, facts }),
+      buildDraftRequest({ brief, strategy, previous, note, facts, format }),
     );
   } catch (error) {
     console.error(
@@ -159,7 +166,7 @@ export async function generateDraftAction(
   });
 
   const parsedJson = extractJson(result.text);
-  const draft = parseDraft(parsedJson);
+  const draft = parseDraft(parsedJson, format);
   if (!draft) {
     // Shape only, never the owner's content, so the logs stay private.
     const trimmed = result.text.trim();

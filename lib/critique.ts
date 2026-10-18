@@ -3,6 +3,7 @@ import type { Brief } from "./brief";
 import type { Draft } from "./draft";
 import type { Strategy } from "./strategy";
 import { cleanTags } from "./tags";
+import { FORMATS } from "./formats";
 
 export const CRITIQUE_PROMPT_VERSION = "critique-v1";
 
@@ -38,14 +39,14 @@ export type Critique = {
   rewrite_instructions: string;
 };
 
-const CRITIQUE_SYSTEM = `You are a tough, honest senior copy editor. You review one short advert against the approved brief. You do not rewrite it and you do not flatter it.
+const CRITIQUE_SYSTEM = `You are a tough, honest senior copy editor. You review one short piece of copy against the approved brief. The format of the copy (social media post, WhatsApp message, listing or email) is stated in the request, and you judge it as that kind of copy. You do not rewrite it and you do not flatter it.
 
 Check these things:
 1. Facts. Compare every factual claim and every descriptive claim in the advert with the approved brief and the owner's added facts. List any claim that is not supported in "invented_facts", quoting the words. Flattering descriptions the owner never gave (calm, safe, prime, luxurious and so on) count as unsupported.
 2. specificity (1 to 5): does it use the owner's concrete facts, or could it be about any similar offer?
-3. difference (1 to 5): does it sound different from the typical adverts in this market, as the owner's goal asks? An opening that simply lists the product scores low.
+3. difference (1 to 5): does it sound different from the typical adverts in this market, as the owner's goal asks? An opening that simply lists the product scores low, except in a listing, whose job is to state the facts clearly.
 4. trust (1 to 5): does it give the reader real reasons to believe it, without inventing proof?
-5. clarity (1 to 5): is it easy to scan, with one clear idea?
+5. clarity (1 to 5): is it easy to scan, with one clear idea, and does it suit its format?
 6. call_to_action (1 to 5): is the next step clear, using the contact method the owner gave?
 Also look at [NEED: ...] markers. Many markers, stacked markers, long markers, or markers that explain Bilva's reasoning are problems.
 
@@ -91,7 +92,8 @@ export function buildCritiqueRequest(args: {
   parts.push(
     `<draft_to_review>\n${cleanTags(JSON.stringify(args.draft))}\n</draft_to_review>`,
   );
-  parts.push("Review the advert. Return your review as JSON.");
+  const label = FORMATS[args.draft.format].label.toLowerCase();
+  parts.push(`The format of the copy: ${label}. Review it. Return your review as JSON.`);
 
   return {
     system: CRITIQUE_SYSTEM,

@@ -260,6 +260,7 @@ export async function reviseDraftAction(
         strategy: ctx.strategy,
         previous: ctx.draft,
         note: "",
+        format: ctx.draft.format,
         facts: ctx.facts,
         critique: ctx.critique,
       }),
@@ -275,7 +276,7 @@ export async function reviseDraftAction(
   await recordUsage(ctx, "draft_revision", result);
 
   const json = extractJson(result.text);
-  const draft = parseDraft(json);
+  const draft = parseDraft(json, ctx.draft.format);
   if (!draft) {
     console.error(
       "Revision not usable:",

@@ -4,6 +4,7 @@ import {
   unverifiedNumbers,
   type Draft,
 } from "@/lib/draft";
+import { FORMATS } from "@/lib/formats";
 import { CopyButton } from "./draft-forms";
 
 export default function DraftView({
@@ -23,6 +24,10 @@ export default function DraftView({
   return (
     <div className="stack-lg">
       <div className="draft-paper stack">
+        <p className="muted small">
+          {FORMATS[draft.format].label} &middot;{" "}
+          {FORMATS[draft.format].headlineLabel}
+        </p>
         <h3 className="draft-headline">{draft.headline}</h3>
         {paragraphs.map((paragraph, index) => (
           <p key={index} className="draft-text">

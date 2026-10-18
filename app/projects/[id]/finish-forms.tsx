@@ -7,6 +7,7 @@ import {
   type FinishActionState,
 } from "./finish-actions";
 import type { Draft } from "@/lib/draft";
+import { FORMATS } from "@/lib/formats";
 
 const initialState: FinishActionState = { error: null };
 
@@ -37,7 +38,7 @@ export function EditDraftForm({
       <input type="hidden" name="projectId" value={projectId} />
 
       <label className="field">
-        <span className="label">Headline</span>
+        <span className="label">{FORMATS[draft.format].headlineLabel}</span>
         <input
           className="input"
           name="headline"

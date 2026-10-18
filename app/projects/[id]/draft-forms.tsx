@@ -2,6 +2,12 @@
 
 import { startTransition, useActionState, useState, type FormEvent } from "react";
 import { generateDraftAction, type DraftActionState } from "./draft-actions";
+import {
+  COPY_FORMATS,
+  DEFAULT_FORMAT,
+  FORMATS,
+  type CopyFormat,
+} from "@/lib/formats";
 
 const initialState: DraftActionState = { error: null };
 
@@ -9,10 +15,13 @@ export function GenerateDraftForm({
   projectId,
   disabled,
   hasDraft,
+  currentFormat,
 }: {
   projectId: string;
   disabled: boolean;
   hasDraft: boolean;
+  // The kind of copy written so far (for the switch on later versions).
+  currentFormat?: CopyFormat;
 }) {
   const [state, action, pending] = useActionState(
     generateDraftAction,
@@ -32,6 +41,43 @@ export function GenerateDraftForm({
     <form onSubmit={onSubmit} className="stack">
       {state.error && <div className="alert alert-error">{state.error}</div>}
       <input type="hidden" name="projectId" value={projectId} />
+
+      {!hasDraft && (
+        <fieldset className="field format-picker">
+          <legend className="label">What should Bilva write?</legend>
+          {COPY_FORMATS.map((key) => (
+            <label key={key} className="format-option">
+              <input
+                type="radio"
+                name="format"
+                value={key}
+                defaultChecked={key === DEFAULT_FORMAT}
+              />
+              <span>
+                <strong>{FORMATS[key].label}</strong>
+                <span className="muted small"> {FORMATS[key].blurb}</span>
+              </span>
+            </label>
+          ))}
+        </fieldset>
+      )}
+
+      {hasDraft && (
+        <label className="field">
+          <span className="label">Kind of copy</span>
+          <select
+            className="input"
+            name="format"
+            defaultValue={currentFormat ?? DEFAULT_FORMAT}
+          >
+            {COPY_FORMATS.map((key) => (
+              <option key={key} value={key}>
+                {FORMATS[key].label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       {hasDraft && (
         <label className="field">
@@ -69,7 +115,7 @@ export function GenerateDraftForm({
 }
 
 export function CopyButton({ text }: { text: string }) {
-  const [label, setLabel] = useState("Copy the advert");
+  const [label, setLabel] = useState("Copy the text");
 
   async function copy() {
     try {
@@ -78,7 +124,7 @@ export function CopyButton({ text }: { text: string }) {
     } catch {
       setLabel("Could not copy. Select the text and copy it.");
     }
-    setTimeout(() => setLabel("Copy the advert"), 2500);
+    setTimeout(() => setLabel("Copy the text"), 2500);
   }
 
   return (
