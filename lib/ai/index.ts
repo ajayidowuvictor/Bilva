@@ -39,7 +39,7 @@ export function friendlyAiMessage(error: unknown): string {
       case "bad_response":
         return "The AI gave an answer Bilva could not use. Please try again.";
       default:
-        return "Bilva could not reach the AI service. Please try again in a moment.";
+        return "Bilva could not get an answer from the AI service. This is usually temporary, so please try again in a minute.";
     }
   }
   return "Something went wrong. Please try again.";

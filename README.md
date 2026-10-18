@@ -31,6 +31,7 @@ Set these in the hosting provider's environment settings (see `.env.example`):
 - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` connect the app to Supabase.
 - `AI_PROVIDER` is `gemini` (free tier, default) or `anthropic` (paid). The matching key must be set: `GEMINI_API_KEY` or `ANTHROPIC_API_KEY`.
 - `GEMINI_MODEL` and `ANTHROPIC_MODEL` are optional model overrides.
+- `GEMINI_FALLBACK_MODELS` (optional, comma separated) lists the free Gemini models tried in turn when the first one is busy.
 - `AI_DAILY_LIMIT` caps successful AI runs per person per 24 hours (default 10).
 
 Free-tier note: on Gemini's free tier, Google may use content to improve its products. Use it for building and testing only. Before real customers use Bilva, switch to a paid provider (Claude, or paid Gemini).

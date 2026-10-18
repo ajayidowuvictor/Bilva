@@ -64,6 +64,7 @@ export async function GET() {
         maxOutputTokens: 200,
       });
       report.testCall = "worked";
+      report.testModelUsed = result.model;
       report.testAnswer = result.text.slice(0, 120);
     } catch (error) {
       report.testCall = "failed";
