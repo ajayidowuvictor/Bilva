@@ -14,6 +14,9 @@ import {
 } from "./brief-forms";
 import StrategyView, { type StrategyCardData } from "./strategy-view";
 import { GenerateStrategiesForm } from "./strategy-forms";
+import { readDraft, type Draft } from "@/lib/draft";
+import DraftView from "./draft-view";
+import { GenerateDraftForm } from "./draft-forms";
 
 // The AI can take a while to answer, so allow the page's actions up to a minute.
 export const maxDuration = 60;
@@ -31,6 +34,14 @@ type BriefRecord = {
   version: number;
   brief_data: unknown;
   approved_at: string | null;
+};
+
+type DraftRecord = {
+  id: string;
+  version: number;
+  strategy_id: string | null;
+  draft_data: unknown;
+  owner_note: string | null;
 };
 
 type StrategyRecord = {
@@ -110,6 +121,31 @@ export default async function ProjectPage({
   }
   const anyChosen = strategyItems.some((item) => item.chosen);
   const chosenItem = strategyItems.find((item) => item.chosen) ?? null;
+
+  // Every written version of the copy, newest first.
+  const { data: draftData, error: draftError } = await supabase
+    .from("drafts")
+    .select("id, version, strategy_id, draft_data, owner_note")
+    .eq("project_id", id)
+    .order("version", { ascending: false });
+
+  const draftRows = (draftData as DraftRecord[] | null) ?? [];
+  const drafts = draftRows
+    .map((row) => ({ row, draft: readDraft(row.draft_data) }))
+    .filter((item): item is { row: DraftRecord; draft: Draft } => item.draft !== null);
+  const latestDraft = drafts.length > 0 ? drafts[0] : null;
+  const olderDrafts = drafts.slice(1);
+  const draftIsForOtherAngle = Boolean(
+    latestDraft &&
+      chosenItem &&
+      latestDraft.row.strategy_id !== chosenItem.id,
+  );
+  // Everything the owner said, used to flag numbers Bilva should not have added.
+  const ownerText = [
+    project.original_idea,
+    project.objective ?? "",
+    brief ? JSON.stringify(brief) : "",
+  ].join(" ");
 
   const limit = dailyLimit();
   const remaining = Math.max(limit - (usedCount ?? 0), 0);
@@ -327,15 +363,128 @@ export default async function ProjectPage({
                 </section>
               )}
 
-              {chosenItem && (
+              {chosenItem && draftError && (
+                <div className="alert alert-info">
+                  Bilva&apos;s database needs its Phase 4 update before drafts
+                  can be written. Please tell the person who set up Bilva.
+                </div>
+              )}
+
+              {chosenItem && !draftError && !latestDraft && (
                 <section className="card stack">
-                  <h2>What happens next</h2>
+                  <h2>Step 3: Write the first draft</h2>
                   <p className="muted">
-                    You chose &ldquo;{chosenItem.strategy.name}&rdquo;. The next
-                    step is the first draft, written from your brief and this
-                    angle. That step is being built next.
+                    You chose &ldquo;{chosenItem.strategy.name}&rdquo;. Bilva
+                    will write a short social media advert from your brief and
+                    this angle. Where it lacks a fact, it will leave a
+                    [NEED: ...] marker instead of guessing.
                   </p>
+                  {!aiReady && (
+                    <div className="alert alert-info">
+                      The AI is not connected yet, so drafts cannot be written
+                      for now.
+                    </div>
+                  )}
+                  {aiReady && remaining === 0 && (
+                    <div className="alert alert-info">
+                      You have used all {limit} AI runs for today. Please come
+                      back tomorrow.
+                    </div>
+                  )}
+                  <GenerateDraftForm
+                    projectId={project.id}
+                    disabled={aiBlocked}
+                    hasDraft={false}
+                  />
+                  {aiReady && remaining > 0 && (
+                    <p className="muted small">
+                      {remaining} of {limit} AI runs left today.
+                    </p>
+                  )}
                 </section>
+              )}
+
+              {chosenItem && !draftError && latestDraft && (
+                <>
+                  <section className="card stack">
+                    <div className="row">
+                      <h2>Your draft</h2>
+                      <span className="chip chip-neutral">
+                        Version {latestDraft.row.version}
+                      </span>
+                    </div>
+                    {draftIsForOtherAngle && (
+                      <div className="alert alert-info">
+                        This draft was written for a different angle than the
+                        one you have chosen now. Write a new version to use
+                        your current angle.
+                      </div>
+                    )}
+                    {latestDraft.row.owner_note && (
+                      <p className="muted small">
+                        Your note for this version: {latestDraft.row.owner_note}
+                      </p>
+                    )}
+                    <DraftView
+                      draft={latestDraft.draft}
+                      ownerText={ownerText}
+                      showCopy
+                    />
+                  </section>
+
+                  <section className="card stack">
+                    <h2>Want it different?</h2>
+                    <p className="muted">
+                      Bilva keeps every version. A new version uses one AI run.
+                    </p>
+                    <GenerateDraftForm
+                      projectId={project.id}
+                      disabled={aiBlocked}
+                      hasDraft
+                    />
+                    {aiReady && (
+                      <p className="muted small">
+                        {remaining} of {limit} AI runs left today.
+                      </p>
+                    )}
+                  </section>
+
+                  {olderDrafts.length > 0 && (
+                    <section className="card">
+                      <details className="fold">
+                        <summary>
+                          Earlier versions{" "}
+                          <span className="chip chip-neutral">
+                            {olderDrafts.length}
+                          </span>
+                        </summary>
+                        <div className="stack-lg">
+                          {olderDrafts.map(({ row, draft }) => (
+                            <div key={row.id} className="stack">
+                              <span className="chip chip-neutral">
+                                Version {row.version}
+                              </span>
+                              <DraftView
+                                draft={draft}
+                                ownerText={ownerText}
+                                showCopy={false}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    </section>
+                  )}
+
+                  <section className="card stack">
+                    <h2>What happens next</h2>
+                    <p className="muted">
+                      Next, Bilva will critique this draft the way a tough
+                      editor would and improve it. That step is being built
+                      next.
+                    </p>
+                  </section>
+                </>
               )}
             </>
           )}

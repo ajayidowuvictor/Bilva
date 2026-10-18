@@ -1,7 +1,7 @@
 import type { AiRequest } from "./ai/types";
 import type { Brief } from "./brief";
 
-export const STRATEGY_PROMPT_VERSION = "strategy-v1";
+export const STRATEGY_PROMPT_VERSION = "strategy-v2";
 
 export const APPROACHES = [
   "trust",
@@ -37,6 +37,7 @@ Rules:
 - Never invent facts. Use only what is in the approved brief. Do not guess prices, document or title status, access, utilities, results, scarcity, deadlines, testimonials, returns or numbers.
 - If an angle depends on a fact the brief does not contain, list it in "needs" in the form "[NEED: ...]". Do not pretend the fact exists. Do not use a missing fact as the basis of an example line.
 - "built_on" lists only facts that really appear in the brief as stated by the owner. Items marked as assumed or missing do not belong there.
+- Describe the place, product or service only with the words and claims the owner gave. Do not add flattering descriptions the owner did not give. For example, do not call a place calm, peaceful, safe, secure, prime, luxurious, affordable or fast-growing unless the owner said so. This applies to "big_idea", "why_it_fits" and "example_line".
 - No hype words, no fake urgency, no pressure tactics.
 - "example_line" is one short line that shows the direction. It is not final copy and may use only stated facts.
 - Write in the same language as the brief.
